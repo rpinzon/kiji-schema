@@ -50,6 +50,8 @@ public class TestNotesTool extends KijiClientTest {
   private static final String RULER =
       "--------------------------------------------------------------------------------";
 
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
   /** Output of the CLI tool, as bytes. */
   private ByteArrayOutputStream mToolOutputBytes = new ByteArrayOutputStream();
 
@@ -75,7 +77,7 @@ public class TestNotesTool extends KijiClientTest {
       LOG.info("Captured output for tool: '{}' with parameters {}:\n{}\n{}{}\n",
           tool.getName(), arguments,
           RULER, mToolOutputStr, RULER);
-      mToolOutputLines = mToolOutputStr.split("\n");
+      mToolOutputLines = mToolOutputStr.split(LINE_SEPARATOR);
     }
   }
 
@@ -133,64 +135,64 @@ public class TestNotesTool extends KijiClientTest {
     assertTrue(mToolOutputStr.startsWith("--target URI must specify at least a table, got:"));
 
     assertFailure("--target=kiji://.env/default/table/info:name,info:email");
-    assertEquals("--target URI must include one or zero columns.\n", mToolOutputStr);
+    assertEquals("--target URI must include one or zero columns." + LINE_SEPARATOR, mToolOutputStr);
 
     assertFailure("--target=kiji://.env/default/table/info:name", "--do=fake");
-    assertEquals("Invalid --do command: 'fake'. Valid commands are set, remove, get\n",
+    assertEquals("Invalid --do command: 'fake'. Valid commands are set, remove, get" + LINE_SEPARATOR,
         mToolOutputStr);
 
     assertFailure("--target=kiji://.env/default/table/info:name", "--do=get", "--in-family=info",
         "--key=key");
-    assertEquals("--in-family requires that no columns are specified in --target\n",
+    assertEquals("--in-family requires that no columns are specified in --target" + LINE_SEPARATOR,
         mToolOutputStr);
   }
 
   @Test
   public void testSetValidatFlags() throws Exception {
     assertFailure("--target=" + getInfoNameURI(), "--do=set", "--prefix");
-    assertEquals("Cannot specify --prefix, --partial, or --regex while --do=set\n", mToolOutputStr);
+    assertEquals("Cannot specify --prefix, --partial, or --regex while --do=set" + LINE_SEPARATOR, mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=set", "--partial");
-    assertEquals("Cannot specify --prefix, --partial, or --regex while --do=set\n", mToolOutputStr);
+    assertEquals("Cannot specify --prefix, --partial, or --regex while --do=set" + LINE_SEPARATOR, mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=set", "--regex");
-    assertEquals("Cannot specify --prefix, --partial, or --regex while --do=set\n", mToolOutputStr);
+    assertEquals("Cannot specify --prefix, --partial, or --regex while --do=set" + LINE_SEPARATOR, mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=set", "--in-family=info");
-    assertEquals("Cannot specify a family with --in-family while --do=set\n", mToolOutputStr);
+    assertEquals("Cannot specify a family with --in-family while --do=set" + LINE_SEPARATOR, mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=set");
-    assertEquals("--do=set requires --key and --value OR --map\n", mToolOutputStr);
+    assertEquals("--do=set requires --key and --value OR --map" + LINE_SEPARATOR, mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=set", "--key=key", "--map=bope");
-    assertEquals("--map is mutually exclusive with --key and --value\n", mToolOutputStr);
+    assertEquals("--map is mutually exclusive with --key and --value" + LINE_SEPARATOR, mToolOutputStr);
   }
 
   @Test
   public void testRemoveValidateFlags() throws Exception {
     assertFailure(
         "--target=" + getInfoNameURI(), "--do=remove", "--prefix", "--partial");
-    assertEquals("Cannot specify more than one of --prefix, --partial, and --regex\n",
+    assertEquals("Cannot specify more than one of --prefix, --partial, and --regex" + LINE_SEPARATOR,
         mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=remove", "--map=bope");
-    assertEquals("Cannot specify --map while --do=remove\n", mToolOutputStr);
+    assertEquals("Cannot specify --map while --do=remove" + LINE_SEPARATOR, mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=remove", "--value=bope");
-    assertEquals("Cannot specify --value while --do=remove\n", mToolOutputStr);
+    assertEquals("Cannot specify --value while --do=remove" + LINE_SEPARATOR, mToolOutputStr);
   }
 
   @Test
   public void testGetValidateFlags() throws Exception {
     assertFailure("--target=" + getInfoNameURI(), "--do=get", "--prefix", "--partial");
-    assertEquals("Cannot specify more than one of --prefix, --partial, and --regex\n",
+    assertEquals("Cannot specify more than one of --prefix, --partial, and --regex" + LINE_SEPARATOR,
         mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=get", "--map=bope");
-    assertEquals("Cannot specify --map while --do=get\n", mToolOutputStr);
+    assertEquals("Cannot specify --map while --do=get" + LINE_SEPARATOR, mToolOutputStr);
 
     assertFailure("--target=" + getInfoNameURI(), "--do=get", "--value=bope");
-    assertEquals("Cannot specify --value while --do=get\n", mToolOutputStr);
+    assertEquals("Cannot specify --value while --do=get" + LINE_SEPARATOR, mToolOutputStr);
   }
 
   @Test

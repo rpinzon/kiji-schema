@@ -21,9 +21,10 @@ package org.kiji.schema.util;
 
 import static org.junit.Assert.assertFalse;
 
-import java.io.File;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
+
+import com.neogrid.ZkFile;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,7 +38,7 @@ public class TestZooKeeperLock extends ZooKeeperTest {
   /** Overly basic test for ZooKeeper locks. */
   @Test
   public void testZooKeeperLock() throws Exception {
-    final File lockDir = new File("/lock");
+    final ZkFile lockDir = new ZkFile("/lock");
     final ZooKeeperClient zkClient = ZooKeeperClient.getZooKeeperClient(getZKAddress());
     try {
       final CyclicBarrier barrier = new CyclicBarrier(2);

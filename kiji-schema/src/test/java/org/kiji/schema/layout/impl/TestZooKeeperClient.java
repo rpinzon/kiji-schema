@@ -19,9 +19,8 @@
 
 package org.kiji.schema.layout.impl;
 
-import java.io.File;
-
 import com.google.common.base.Preconditions;
+import com.neogrid.ZkFile;
 import org.apache.curator.test.KillSession;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,9 +45,9 @@ public class TestZooKeeperClient extends ZooKeeperTest {
       KillSession.kill(client.getZKClient(1.0), getZKAddress());
 
       // This operation should block until a new ZooKeeper session is established, then proceed:
-      client.createNodeRecursively(new File("/a/b/c/d/e/f"));
+      client.createNodeRecursively(new ZkFile("/a/b/c/d/e/f"));
 
-      Assert.assertEquals(0, client.exists(new File("/a/b/c/d/e/f")).getVersion());
+      Assert.assertEquals(0, client.exists(new ZkFile("/a/b/c/d/e/f")).getVersion());
 
     } finally {
       client.release();

@@ -283,8 +283,8 @@ public class TestAvroUtils extends KijiClientTest {
             reader,
             WRITER_SCHEMA,
             String.format(
-                "Data encoded using writer schema:\n%s\n"
-                + "will or may fail to decode using reader schema:\n%s\n",
+                "Data encoded using writer schema:%n%s%n"
+                + "will or may fail to decode using reader schema:%n%s%n",
                 WRITER_SCHEMA.toString(true),
                 reader.toString(true)));
 
@@ -308,8 +308,8 @@ public class TestAvroUtils extends KijiClientTest {
             invalidReader,
             STRING_ARRAY_SCHEMA,
             String.format(
-                "Data encoded using writer schema:\n%s\n"
-                + "will or may fail to decode using reader schema:\n%s\n",
+                "Data encoded using writer schema:%n%s%n"
+                + "will or may fail to decode using reader schema:%n%s%n",
                 STRING_ARRAY_SCHEMA.toString(true),
                 invalidReader.toString(true)));
 
@@ -336,8 +336,8 @@ public class TestAvroUtils extends KijiClientTest {
             INT_SCHEMA,
             STRING_SCHEMA,
             String.format(
-                "Data encoded using writer schema:\n%s\n"
-                + "will or may fail to decode using reader schema:\n%s\n",
+                "Data encoded using writer schema:%n%s%n"
+                + "will or may fail to decode using reader schema:%n%s%n",
                 STRING_SCHEMA.toString(true),
                 INT_SCHEMA.toString(true)));
 
@@ -695,8 +695,8 @@ public class TestAvroUtils extends KijiClientTest {
             reader4,
             writer,
             String.format(
-                "Data encoded using writer schema:\n%s\n"
-                + "will or may fail to decode using reader schema:\n%s\n",
+                "Data encoded using writer schema:%n%s%n"
+                + "will or may fail to decode using reader schema:%n%s%n",
                 writer.toString(true),
                 reader4.toString(true)));
 
@@ -756,8 +756,8 @@ public class TestAvroUtils extends KijiClientTest {
             reader,
             writer3,
             String.format(
-                "Data encoded using writer schema:\n%s\n"
-                + "will or may fail to decode using reader schema:\n%s\n",
+                "Data encoded using writer schema:%n%s%n"
+                + "will or may fail to decode using reader schema:%n%s%n",
                 writer3.toString(true),
                 reader.toString(true)));
 

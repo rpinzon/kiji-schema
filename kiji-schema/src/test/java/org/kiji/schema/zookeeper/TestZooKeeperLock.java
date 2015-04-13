@@ -19,7 +19,7 @@
 
 package org.kiji.schema.zookeeper;
 
-import java.io.File;
+import com.neogrid.ZkFile;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.junit.Assert;
@@ -35,7 +35,7 @@ public class TestZooKeeperLock extends ZooKeeperTest {
 
   @Test
   public void testZooKeeperLockIsExclusiveAmongZKSessions() throws Exception {
-    final File path = new File("/lock/is/exclusive");
+    final ZkFile path = new ZkFile("/lock/is/exclusive");
     CuratorFramework zkClient1 = ZooKeeperUtils.getZooKeeperClient(getZKAddress());
     try {
       CuratorFramework zkClient2 = ZooKeeperUtils.createZooKeeperClient(getZKAddress());
@@ -67,7 +67,7 @@ public class TestZooKeeperLock extends ZooKeeperTest {
 
   @Test
   public void testZooKeeperLockIsExclusiveInAZKSession() throws Exception {
-    final File path = new File("/lock/is/exclusive/in/session");
+    final ZkFile path = new ZkFile("/lock/is/exclusive/in/session");
     CuratorFramework zkClient = ZooKeeperUtils.getZooKeeperClient(getZKAddress());
     try {
       ZooKeeperLock lock1 = new ZooKeeperLock(zkClient, path);
@@ -98,7 +98,7 @@ public class TestZooKeeperLock extends ZooKeeperTest {
    */
   @Test
   public void testZooKeeperLockIsExclusiveWithZKMZooKeeperLock() throws Exception {
-    final File path = new File("/lock/is/exclusive/zkm");
+    final ZkFile path = new ZkFile("/lock/is/exclusive/zkm");
     CuratorFramework zkClient1 = ZooKeeperUtils.getZooKeeperClient(getZKAddress());
     try {
       ZooKeeperClient zkClient2 = ZooKeeperClient.getZooKeeperClient(getZKAddress());

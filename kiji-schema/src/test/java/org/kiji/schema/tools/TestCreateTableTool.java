@@ -26,10 +26,11 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.URLEncoder;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
-
 import org.kiji.schema.KijiURI;
 import org.kiji.schema.avro.TableLayoutDesc;
 import org.kiji.schema.layout.InvalidLayoutException;
@@ -95,7 +96,7 @@ public class TestCreateTableTool extends KijiToolTest {
     assertEquals(BaseTool.SUCCESS, runTool(new CreateTableTool(),
       "--table=" + tableURI,
       "--layout=" + layoutFile,
-      "--split-key-file=file://" + splitKeyFile,
+      "--split-key-file=" + splitKeyFile,
       "--debug"
     ));
     assertEquals(2, mToolOutputLines.length);
@@ -119,7 +120,7 @@ public class TestCreateTableTool extends KijiToolTest {
       runTool(new CreateTableTool(),
         "--table=" + tableURI,
         "--layout=" + layoutFile,
-        "--split-key-file=file://" + splitKeyFile
+        "--split-key-file=" + splitKeyFile
       );
       fail("Should throw IllegalArgumentException");
     } catch (IllegalArgumentException iae) {

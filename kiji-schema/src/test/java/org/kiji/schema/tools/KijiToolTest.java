@@ -39,6 +39,8 @@ import org.kiji.schema.KijiClientTest;
  */
 public abstract class KijiToolTest extends KijiClientTest {
 
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
   /** Horizontal ruler to delimit CLI outputs in logs. */
   private static final String RULER =
       "--------------------------------------------------------------------------------";
@@ -91,7 +93,7 @@ public abstract class KijiToolTest extends KijiClientTest {
       LOG.info("Captured output for tool: '{}' with parameters {}:\n{}\n{}{}\n",
           tool.getName(), arguments,
           RULER, mToolOutputStr, RULER);
-      mToolOutputLines = mToolOutputStr.split("\n");
+      mToolOutputLines = mToolOutputStr.split(LINE_SEPARATOR);
     }
   }
 }
