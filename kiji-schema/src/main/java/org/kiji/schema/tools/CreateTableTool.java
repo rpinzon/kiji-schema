@@ -19,17 +19,20 @@
 
 package org.kiji.schema.tools;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.kiji.annotations.ApiAudience;
 import org.kiji.common.flags.Flag;
 import org.kiji.schema.Kiji;
@@ -139,10 +142,7 @@ public final class CreateTableTool extends BaseTool {
   @Override
   protected int run(List<String> nonFlagArgs) throws Exception {
     getPrintStream().println("Parsing table layout: " + mLayout);
-    final Path path = new Path(mLayout);
-    final FileSystem fs =
-        fileSystemSpecified(path) ? path.getFileSystem(getConf()) : FileSystem.getLocal(getConf());
-    final FSDataInputStream inputStream = fs.open(path);
+    final InputStream inputStream = openInputStream(mLayout);
     final TableLayoutDesc tableLayout = KijiTableLayout.readTableLayoutDescFromJSON(inputStream);
     final String tableName = tableLayout.getName();
     Preconditions.checkArgument(
@@ -178,15 +178,11 @@ public final class CreateTableTool extends BaseTool {
                 + KijiTableLayout.getEncoding(tableLayout.getKeysFormat()));
       }
       // Open the split key file.
-      final Path splitKeyFilePath = new Path(mSplitKeyFilePath);
-      final FileSystem splitKeyPathFs = fileSystemSpecified(splitKeyFilePath)
-          ? splitKeyFilePath.getFileSystem(getConf())
-          : FileSystem.getLocal(getConf());
-      final FSDataInputStream splitKeyFileInputStream = splitKeyPathFs.open(splitKeyFilePath);
+      final InputStream splitKeyFileInputStream = openInputStream(mSplitKeyFilePath);
 
       // Read the split keys.
       final List<byte[]> splitKeys = SplitKeyFile.decodeRegionSplitList(splitKeyFileInputStream);
-      LOG.debug("Read {} keys from split-key-file '{}':", splitKeys.size(), splitKeyFilePath);
+      LOG.debug("Read {} keys from split-key-file '{}':", splitKeys.size(), mSplitKeyFilePath);
       for (int i = 0; i < splitKeys.size(); ++i) {
         LOG.debug("Split key #{}: {}", i, Bytes.toStringBinary(splitKeys.get(i)));
       }
@@ -200,6 +196,26 @@ public final class CreateTableTool extends BaseTool {
     }
 
     return SUCCESS;
+  }
+
+  /**
+   * Open a new InputStream to read from file.
+   * @param filePath file path to open.
+   * @return A new, opened InputStream.
+   * @throws IOException if something goes wrong while opening file.
+   */
+  private InputStream openInputStream(String filePath) throws IOException {
+    final Path path = new Path(filePath);
+    final Configuration conf = getConf();
+
+    if (!fileSystemSpecified(path)) {
+      return new FileInputStream(filePath);
+    } else {
+      final FileSystem fs =
+          fileSystemSpecified(path) ? path.getFileSystem(conf) : FileSystem.getLocal(conf);
+      final FSDataInputStream inputStream = fs.open(path);
+      return inputStream;
+    }
   }
 
   /**

@@ -54,14 +54,9 @@ public final class JvmId {
    * @return a unique ID for this JVM.
    */
   private static String generateJvmId() {
-    try {
-      final String hostname = InetAddress.getLocalHost().getHostName();
-      final int pid = getPid();
-      final long timestamp = System.currentTimeMillis();
-      return String.format("%s;%d;%d", hostname, pid, timestamp);
-    } catch (UnknownHostException uhe) {
-      throw new KijiIOException(uhe);
-    }
+	  final String pid = getPid();
+	  final long timestamp = System.currentTimeMillis();
+	  return String.format("%s@%d", pid, timestamp);
   }
 
   /**
@@ -69,19 +64,8 @@ public final class JvmId {
    *
    * @return the Unix process ID of this JVM.
    */
-  public static int getPid() {
-    try {
-      final Process process = new ProcessBuilder("/bin/sh", "-c", "echo $PPID").start();
-      try {
-        Preconditions.checkState(process.waitFor() ==  0);
-      } catch (InterruptedException ie) {
-        throw new RuntimeInterruptedException(ie);
-      }
-      final String pidStr = IOUtils.toString(process.getInputStream()).trim();
-      return Integer.parseInt(pidStr);
-    } catch (IOException ioe) {
-      throw new KijiIOException(ioe);
-    }
+  public static String getPid() {
+	  return java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
   }
 
   /** Utility class may not be instantiated. */

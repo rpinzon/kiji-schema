@@ -20,13 +20,13 @@
 package org.kiji.schema.util;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
 import com.google.common.base.Preconditions;
+import com.neogrid.ZkFile;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.NoNodeException;
@@ -58,9 +58,9 @@ public final class ZooKeeperLock implements Lock, Closeable {
 
   private final String mConstructorStack;
   private final ZooKeeperClient mZKClient;
-  private final File mLockDir;
-  private final File mLockPathPrefix;
-  private File mCreatedPath = null;
+  private final ZkFile mLockDir;
+  private final ZkFile mLockPathPrefix;
+  private ZkFile mCreatedPath = null;
   private WatchedEvent mPrecedingEvent = null;
 
   /**
@@ -69,12 +69,12 @@ public final class ZooKeeperLock implements Lock, Closeable {
    * @param zookeeper ZooKeeper client.
    * @param lockDir Path of the directory node to use for the lock.
    */
-  public ZooKeeperLock(ZooKeeperClient zookeeper, File lockDir) {
+  public ZooKeeperLock(ZooKeeperClient zookeeper, ZkFile lockDir) {
     this.mConstructorStack = CLEANUP_LOG.isDebugEnabled() ? Debug.getStackTrace() : null;
 
     this.mZKClient = zookeeper;
     this.mLockDir = lockDir;
-    this.mLockPathPrefix = new File(lockDir,  LOCK_NAME_PREFIX);
+    this.mLockPathPrefix = new ZkFile(lockDir,  LOCK_NAME_PREFIX);
     // ZooKeeperClient.retain() should be the last line of the constructor.
     this.mZKClient.retain();
     DebugResourceTracker.get().registerResource(this);
@@ -120,7 +120,7 @@ public final class ZooKeeperLock implements Lock, Closeable {
    * @return the created ZooKeeper lock node path.
    * @throws KeeperException on error.
    */
-  private File createZKLockNode(File path) throws KeeperException {
+  private ZkFile createZKLockNode(ZkFile path) throws KeeperException {
     boolean parentCreated = false;
     while (true) {
       try {
@@ -145,7 +145,7 @@ public final class ZooKeeperLock implements Lock, Closeable {
     /** Absolute time deadline, in seconds since Epoch */
     final double absoluteDeadline = (timeout > 0.0) ? Time.now() + timeout : 0.0;
 
-    File createdPath = null;
+    ZkFile createdPath = null;
     synchronized (this) {
       Preconditions.checkState(null == mCreatedPath, mCreatedPath);
       // Queues for access to the lock:
@@ -169,7 +169,7 @@ public final class ZooKeeperLock implements Lock, Closeable {
           return true;
         } else { // index >= 1
           synchronized (this) {
-            final File preceding = new File(mLockDir, children[index - 1]);
+            final ZkFile preceding = new ZkFile(mLockDir, children[index - 1]);
             LOG.debug("{}: waiting for preceding node {} to disappear", this, preceding);
             if (mZKClient.exists(preceding, mLockWatcher) != null) {
               if (absoluteDeadline > 0.0) {
@@ -219,7 +219,7 @@ public final class ZooKeeperLock implements Lock, Closeable {
    * @throws KeeperException on error.
    */
   private void unlockInternal() throws InterruptedException, KeeperException {
-    File pathToDelete = null;
+    ZkFile pathToDelete = null;
     synchronized (this) {
       Preconditions.checkState(null != mCreatedPath,
           "unlock() cannot be called while lock is unlocked.");

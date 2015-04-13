@@ -20,7 +20,6 @@
 package org.kiji.schema.zookeeper;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Collections;
@@ -36,6 +35,7 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.neogrid.ZkFile;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 public class UsersTracker implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(UsersTracker.class);
 
-  private final File mUsersDir;
+  private final ZkFile mUsersDir;
 
   private final PathChildrenCache mCache;
 
@@ -69,7 +69,7 @@ public class UsersTracker implements Closeable {
    */
   UsersTracker(
       CuratorFramework zkClient,
-      File usersDir
+      ZkFile usersDir
   ) {
     mUsersDir = usersDir;
     mCache = new PathChildrenCache(zkClient, usersDir.getPath(), false);

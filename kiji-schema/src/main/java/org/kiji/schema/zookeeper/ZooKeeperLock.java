@@ -19,13 +19,13 @@
 
 package org.kiji.schema.zookeeper;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.neogrid.ZkFile;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.WatchedEvent;
@@ -45,9 +45,9 @@ public final class ZooKeeperLock implements Lock {
   private static final String LOCK_NAME_PREFIX = "lock-";
 
   private final CuratorFramework mZKClient;
-  private final File mLockDir;
-  private final File mLockPathPrefix;
-  private File mCreatedPath = null;
+  private final ZkFile mLockDir;
+  private final ZkFile mLockPathPrefix;
+  private ZkFile mCreatedPath = null;
 
   /**
    * Constructs a ZooKeeper lock object.
@@ -55,10 +55,10 @@ public final class ZooKeeperLock implements Lock {
    * @param zkClient ZooKeeper client.  Will be not be closed by this lock.
    * @param lockDir Path of the directory node to use for the lock.
    */
-  public ZooKeeperLock(CuratorFramework zkClient, File lockDir) {
+  public ZooKeeperLock(CuratorFramework zkClient, ZkFile lockDir) {
     mZKClient = zkClient;
     mLockDir = lockDir;
-    mLockPathPrefix = new File(lockDir, LOCK_NAME_PREFIX);
+    mLockPathPrefix = new ZkFile(lockDir, LOCK_NAME_PREFIX);
     DebugResourceTracker.get().registerResource(this);
   }
 
@@ -111,7 +111,7 @@ public final class ZooKeeperLock implements Lock {
       Preconditions.checkState(null == mCreatedPath, mCreatedPath);
       // Queues for access to the lock:
       try {
-        mCreatedPath = new File(
+        mCreatedPath = new ZkFile(
             mZKClient
                 .create()
                 .creatingParentsIfNeeded()
@@ -137,7 +137,7 @@ public final class ZooKeeperLock implements Lock {
           return true;
         } else { // index >= 1
           synchronized (this) {
-            final String preceding = new File(mLockDir, children.get(index - 1)).getPath();
+            final String preceding = new ZkFile(mLockDir, children.get(index - 1)).getPath();
             LOG.debug("{}: waiting for preceding node {} to disappear", this, preceding);
             if (mZKClient.checkExists().usingWatcher(mLockWatcher).forPath(preceding) != null) {
               if (absoluteDeadline > 0.0) {
@@ -181,7 +181,7 @@ public final class ZooKeeperLock implements Lock {
    * @throws IOException on unrecoverable ZooKeeper error.
    */
   private void unlockInternal() throws IOException {
-    File pathToDelete;
+    ZkFile pathToDelete;
     Preconditions.checkState(null != mCreatedPath,
         "unlock() cannot be called while lock is unlocked.");
     pathToDelete = mCreatedPath;

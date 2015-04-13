@@ -19,7 +19,6 @@
 
 package org.kiji.schema.layout.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +26,7 @@ import java.util.Map;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import com.neogrid.ZkFile;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -178,7 +178,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
   private final LockFactory mLockFactory = new LockFactory() {
     @Override
     public Lock create(String name) throws IOException {
-      return new ZooKeeperLock(ZooKeeperClient.this, new File(name));
+      return new ZooKeeperLock(ZooKeeperClient.this, new ZkFile(name));
     }
   };
 
@@ -388,8 +388,8 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @throws KeeperException on ZooKeeper errors.
    *     Connection related errors are handled by retrying the operations.
    */
-  public File create(
-      File path,
+  public ZkFile create(
+      ZkFile path,
       byte[] data,
       List<ACL> acl,
       CreateMode createMode)
@@ -397,7 +397,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
 
     while (true) {
       try {
-        return new File(getZKClient().create(path.toString(), data, acl, createMode));
+        return new ZkFile(getZKClient().create(path.toString(), data, acl, createMode));
       } catch (InterruptedException ie) {
         throw new RuntimeInterruptedException(ie);
       } catch (ConnectionLossException ke) {
@@ -421,7 +421,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @throws KeeperException on ZooKeeper errors.
    *     Connection related errors are handled by retrying the operations.
    */
-  public Stat exists(File path) throws KeeperException {
+  public Stat exists(ZkFile path) throws KeeperException {
     while (true) {
       try {
         return getZKClient().exists(path.toString(), false);
@@ -449,7 +449,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @throws KeeperException on ZooKeeper errors.
    *     Connection related errors are handled by retrying the operations.
    */
-  public Stat exists(File path, Watcher watcher) throws KeeperException {
+  public Stat exists(ZkFile path, Watcher watcher) throws KeeperException {
     while (true) {
       try {
         return getZKClient().exists(path.toString(), watcher);
@@ -478,7 +478,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @throws KeeperException on ZooKeeper errors.
    *     Connection related errors are handled by retrying the operations.
    */
-  public byte[] getData(File path, Watcher watcher, Stat stat)
+  public byte[] getData(ZkFile path, Watcher watcher, Stat stat)
       throws KeeperException {
     while (true) {
       try {
@@ -507,7 +507,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @throws KeeperException on ZooKeeper errors.
    *     Connection related errors are handled by retrying the operations.
    */
-  public Stat setData(File path, byte[] data, int version) throws KeeperException {
+  public Stat setData(ZkFile path, byte[] data, int version) throws KeeperException {
     while (true) {
       try {
         return getZKClient().setData(path.toString(), data, version);
@@ -535,7 +535,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @throws KeeperException on ZooKeeper errors.
    *     Connection related errors are handled by retrying the operations.
    */
-  public List<String> getChildren(File path, Watcher watcher, Stat stat)
+  public List<String> getChildren(ZkFile path, Watcher watcher, Stat stat)
       throws KeeperException {
     while (true) {
       try {
@@ -562,7 +562,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @throws KeeperException on ZooKeeper errors.
    *     Connection related errors are handled by retrying the operations.
    */
-  public void delete(File path, int version) throws KeeperException {
+  public void delete(ZkFile path, int version) throws KeeperException {
     while (true) {
       try {
         getZKClient().delete(path.toString(), version);
@@ -587,7 +587,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @param path of the node to create.
    * @throws KeeperException on I/O error.
    */
-  public void createNodeRecursively(File path)
+  public void createNodeRecursively(ZkFile path)
       throws KeeperException {
 
     if (exists(path) != null) {
@@ -598,13 +598,13 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
       // No need to create the root node "/" :
       return;
     }
-    final File parent = path.getParentFile();
+    final ZkFile parent = path.getParentFile();
     if (parent != null) {
       createNodeRecursively(parent);
     }
     try {
       LOG.debug("Creating ZooKeeper node: {}", path);
-      final File createdPath =
+      final ZkFile createdPath =
           this.create(path, EMPTY_BYTES, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       Preconditions.checkState(createdPath.equals(path));
     } catch (NodeExistsException exn) {
@@ -627,7 +627,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @param path of the node to remove.
    * @throws KeeperException on I/O error.
    */
-  public void deleteNodeRecursively(File path) throws KeeperException {
+  public void deleteNodeRecursively(ZkFile path) throws KeeperException {
     Stat stat = exists(path);  // Race condition if someone else updates the znode in the meantime
 
     if (stat == null) {
@@ -636,7 +636,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
 
     List<String> children = getChildren(path, null, null);
     for (String child : children) {
-      deleteNodeRecursively(new File(path, child));
+      deleteNodeRecursively(new ZkFile(path, child));
     }
     delete(path, stat.getVersion());
   }

@@ -20,7 +20,6 @@
 package org.kiji.schema.layout.impl;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -33,6 +32,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import com.neogrid.ZkFile;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -121,10 +121,10 @@ public final class ZooKeeperMonitor implements Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(ZooKeeperMonitor.class);
 
   /** Root path of the ZooKeeper directory node where to write Kiji nodes. */
-  private static final File ROOT_ZOOKEEPER_PATH = new File("/kiji-schema");
+  private static final ZkFile ROOT_ZOOKEEPER_PATH = new ZkFile("/kiji-schema");
 
   /** Path of the ZooKeeper directory where instance Kiji nodes are written. */
-  public static final File INSTANCES_ZOOKEEPER_PATH = new File(ROOT_ZOOKEEPER_PATH, "instances");
+  public static final ZkFile INSTANCES_ZOOKEEPER_PATH = new ZkFile(ROOT_ZOOKEEPER_PATH, "instances");
 
   /** UTF-8 encoding name. */
   private static final String UTF8 = "utf-8";
@@ -151,8 +151,8 @@ public final class ZooKeeperMonitor implements Closeable {
    * @param kijiURI URI of a Kiji instance to report the ZooKeeper node path for.
    * @return the ZooKeeper node path for a Kiji instance.
    */
-  public static File getInstanceDir(KijiURI kijiURI) {
-    return new File(INSTANCES_ZOOKEEPER_PATH, kijiURI.getInstance());
+  public static ZkFile getInstanceDir(KijiURI kijiURI) {
+    return new ZkFile(INSTANCES_ZOOKEEPER_PATH, kijiURI.getInstance());
   }
 
   /**
@@ -161,8 +161,8 @@ public final class ZooKeeperMonitor implements Closeable {
    * @param instanceURI URI of the instance for which to get a lock for permissions changes.
    * @return the path of the ZooKeeper node used as a lock for permissions changes.
    */
-  public static File getInstancePermissionsLock(KijiURI instanceURI) {
-    return new File(getInstanceDir(instanceURI), "permissions_lock");
+  public static ZkFile getInstancePermissionsLock(KijiURI instanceURI) {
+    return new ZkFile(getInstanceDir(instanceURI), "permissions_lock");
   }
 
   /**
@@ -171,8 +171,8 @@ public final class ZooKeeperMonitor implements Closeable {
    * @param kijiURI URI of a Kiji instance to report the ZooKeeper node path for.
    * @return the ZooKeeper node path that contains all the tables in the specified Kiji instance.
    */
-  public static File getInstanceTablesDir(KijiURI kijiURI) {
-    return new File(getInstanceDir(kijiURI), "tables");
+  public static ZkFile getInstanceTablesDir(KijiURI kijiURI) {
+    return new ZkFile(getInstanceDir(kijiURI), "tables");
   }
 
   /**
@@ -181,8 +181,8 @@ public final class ZooKeeperMonitor implements Closeable {
    * @param kijiURI URI of a Kiji instance to report the ZooKeeper node path for.
    * @return the ZooKeeper node path that contains all users of the specified Kiji instance.
    */
-  public static File getInstanceUsersDir(KijiURI kijiURI) {
-    return new File(getInstanceDir(kijiURI), "users");
+  public static ZkFile getInstanceUsersDir(KijiURI kijiURI) {
+    return new ZkFile(getInstanceDir(kijiURI), "users");
   }
 
   /**
@@ -191,8 +191,8 @@ public final class ZooKeeperMonitor implements Closeable {
    * @param tableURI URI of a Kiji table to report the ZooKeeper node path for.
    * @return the ZooKeeper node path for a Kiji table.
    */
-  public static File getTableDir(KijiURI tableURI) {
-    return new File(getInstanceTablesDir(tableURI), tableURI.getTable());
+  public static ZkFile getTableDir(KijiURI tableURI) {
+    return new ZkFile(getInstanceTablesDir(tableURI), tableURI.getTable());
   }
 
   /**
@@ -203,8 +203,8 @@ public final class ZooKeeperMonitor implements Closeable {
    * @return the path of the ZooKeeper node that contains the most recent layout version of the
    *     specified Kiji table.
    */
-  public static File getTableLayoutFile(KijiURI tableURI) {
-    return new File(getTableDir(tableURI), "layout");
+  public static ZkFile getTableLayoutFile(KijiURI tableURI) {
+    return new ZkFile(getTableDir(tableURI), "layout");
   }
 
   /**
@@ -214,8 +214,8 @@ public final class ZooKeeperMonitor implements Closeable {
    *     URI register themselves.
    * @return the path of the ZooKeeper node where users of a table register.
    */
-  public static File getTableUsersDir(KijiURI tableURI) {
-    return new File(getTableDir(tableURI), "users");
+  public static ZkFile getTableUsersDir(KijiURI tableURI) {
+    return new ZkFile(getTableDir(tableURI), "users");
   }
 
   /**
@@ -225,8 +225,8 @@ public final class ZooKeeperMonitor implements Closeable {
    *     updates.
    * @return the path of the ZooKeeper node used to create locks for table layout updates.
    */
-  public static File getTableLayoutUpdateLock(KijiURI tableURI) {
-    return new File(getTableDir(tableURI), "layout_update_lock");
+  public static ZkFile getTableLayoutUpdateLock(KijiURI tableURI) {
+    return new ZkFile(getTableDir(tableURI), "layout_update_lock");
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -357,7 +357,7 @@ public final class ZooKeeperMonitor implements Closeable {
    */
   public void notifyNewTableLayout(KijiURI tableURI, byte[] layout, int version)
       throws KeeperException {
-    final File layoutPath = getTableLayoutFile(tableURI);
+    final ZkFile layoutPath = getTableLayoutFile(tableURI);
     this.mZKClient.createNodeRecursively(layoutPath);
     // This should not be needed if we add a lock for layout updates.
     final Stat updateStat =
@@ -390,7 +390,7 @@ public final class ZooKeeperMonitor implements Closeable {
   public final class LayoutTracker implements Closeable {
     private volatile LayoutUpdateHandler mHandler;
     private final KijiURI mTableURI;
-    private final File mTableLayoutFile;
+    private final ZkFile mTableLayoutFile;
     private final LayoutWatcher mWatcher = new LayoutWatcher();
     private final Stat mLayoutStat = new Stat();
     private final AtomicReference<State> mState = new AtomicReference<State>(State.UNINITIALIZED);
@@ -526,7 +526,7 @@ public final class ZooKeeperMonitor implements Closeable {
   public final class UsersTracker implements Closeable {
     private final UsersUpdateHandler mHandler;
     private final KijiURI mTableURI;
-    private final File mUsersDir;
+    private final ZkFile mUsersDir;
     private final UsersWatcher mWatcher = new UsersWatcher();
     private final Stat mStat = new Stat();
     private final AtomicReference<State> mState = new AtomicReference<State>(State.UNINITIALIZED);
@@ -654,7 +654,7 @@ public final class ZooKeeperMonitor implements Closeable {
     private final KijiURI mTableURI;
     private final Object mMonitor = new Object();
     /** protected by mMonitor. */
-    private File mCurrentNode;
+    private ZkFile mCurrentNode;
 
     /**
      * Create a new table user registration in ZooKeeper.  The registration will not take effect
@@ -696,13 +696,13 @@ public final class ZooKeeperMonitor implements Closeable {
     private void register(String layoutID) throws IOException {
       synchronized (mMonitor) {
         try {
-          final File usersDir = getTableUsersDir(mTableURI);
+          final ZkFile usersDir = getTableUsersDir(mTableURI);
           LOG.debug("Registering user '{}' for Kiji table '{}' with layout ID '{}'.",
               mUserID, mTableURI, layoutID);
 
           ZooKeeperMonitor.this.mZKClient.createNodeRecursively(usersDir);
           final String nodeName = makeZKNodeName(mUserID, layoutID);
-          final File nodePath = new File(usersDir, nodeName);
+          final ZkFile nodePath = new ZkFile(usersDir, nodeName);
           final byte[] data = EMPTY_BYTES;
           mCurrentNode = ZooKeeperMonitor.this.mZKClient.create(
               nodePath, data, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
@@ -750,7 +750,7 @@ public final class ZooKeeperMonitor implements Closeable {
     private final KijiURI mInstanceURI;
     private final Object mMonitor = new Object();
     /** protected by mMonitor. */
-    private File mCurrentNode;
+    private ZkFile mCurrentNode;
 
     /**
      * Create a new instance user registration.
@@ -773,13 +773,13 @@ public final class ZooKeeperMonitor implements Closeable {
     public void start() throws IOException {
       synchronized (mMonitor) {
         try {
-          final File usersDir = getInstanceUsersDir(mInstanceURI);
+          final ZkFile usersDir = getInstanceUsersDir(mInstanceURI);
           LOG.debug("Registering user '{}' for Kiji instance '{}' with system version '{}'.",
               mUserID, mInstanceURI, mSystemVersion);
 
           ZooKeeperMonitor.this.mZKClient.createNodeRecursively(usersDir);
           final String nodeName = makeZKNodeName(mUserID, mSystemVersion);
-          final File nodePath = new File(usersDir, nodeName);
+          final ZkFile nodePath = new ZkFile(usersDir, nodeName);
           mCurrentNode = ZooKeeperMonitor.this.mZKClient.create(
               nodePath, EMPTY_BYTES, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
         } catch (KeeperException e) {
