@@ -56,12 +56,12 @@ public final class CDH5MR1SchemaBridgeFactory extends SchemaPlatformBridgeFactor
     String hbaseVer = org.apache.hadoop.hbase.util.VersionInfo.getVersion();
 
     if (hadoopVer.matches("2\\..*-cdh5\\..*")
-        && hbaseVer.matches("0\\.9[56]\\..-cdh5\\..*")) {
+        && hbaseVer.matches("0\\.98\\..-cdh5\\..*")) {
       // This is our only bridge for CDH5; this is the
       // best platform bridge available.
       return Priority.HIGH;
     } else if (hadoopVer.matches("2\\..*")
-        && hbaseVer.matches("0\\.96\\..*")) {
+        && hbaseVer.matches("0\\.9[68]\\..*")) {
       // This is our only bridge for HBase 0.96.
       return Priority.LOW;
     } else {
