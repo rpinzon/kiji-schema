@@ -197,6 +197,7 @@
     <dependency>
       <groupId>org.kiji.common</groupId>
       <artifactId>kiji-common-flags</artifactId>
+      <version>${kiji-common-flags.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -217,6 +218,7 @@
     <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro-mapred</artifactId>
+      <version>${avro-mapred.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-pool</groupId>
@@ -238,6 +240,7 @@
     <dependency>
       <groupId>org.kiji.annotations</groupId>
       <artifactId>annotations</artifactId>
+      <version>${annotations.version}</version>
     </dependency>
     <dependency>
       <groupId>org.kiji.delegation</groupId>
@@ -330,7 +333,7 @@
          an Apache Hadoop 1.x-based platform.
       -->
 
-      <id>cdh4</id>
+      <id>cdh5</id>
       <activation>
         <property>
           <name>!platform</name>
@@ -345,21 +348,21 @@
           <artifactId>hadoop-core</artifactId>
           <scope>compile</scope>
           <optional>true</optional>
-          <version>${cdh4-hadoop.version}</version>
+          <version>${cdh5-hadoop.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-client</artifactId>
           <scope>compile</scope>
           <optional>true</optional>
-          <version>${cdh4-hadoop.version}</version>
+          <version>${cdh5-hadoop.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-minicluster</artifactId>
           <scope>test</scope>
           <optional>true</optional>
-          <version>${cdh4-hadoop.version}</version>
+          <version>${cdh5-hadoop.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>
@@ -367,14 +370,14 @@
           <type>test-jar</type>
           <scope>test</scope>
           <optional>true</optional>
-          <version>${cdh4-hbase.version}</version>
+          <version>${cdh5-hbase.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase</artifactId>
           <scope>compile</scope>
           <optional>true</optional>
-          <version>${cdh4-hbase.version}</version>
+          <version>${cdh5-hbase.version}</version>
         </dependency>
       </dependencies>
     </profile>
