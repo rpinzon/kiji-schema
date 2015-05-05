@@ -89,8 +89,11 @@ public final class CDH5MR1SchemaBridge extends SchemaPlatformBridge {
 
      return HFile.getWriterFactory(conf, new CacheConfig(conf))
          .withPath(fs, path)
-         .withBlockSize(blockSizeBytes)
-         .withCompression(Compression.getCompressionAlgorithmByName(compressionType))
+         
+         // TODO revisar porque da mudanca
+         
+         //.withBlockSize(blockSizeBytes)
+         //.withCompression(Compression.getCompressionAlgorithmByName(compressionType))
          .withComparator(KeyValue.COMPARATOR)
          .create();
   }
