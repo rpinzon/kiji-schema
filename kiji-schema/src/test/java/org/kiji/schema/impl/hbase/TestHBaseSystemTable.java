@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package org.kiji.schema;
+package org.kiji.schema.impl.hbase;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,7 +28,7 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.junit.Test;
 
-import org.kiji.schema.impl.hbase.HBaseSystemTable;
+import org.kiji.schema.KijiURI;
 import org.kiji.schema.util.ProtocolVersion;
 import org.kiji.testing.fakehtable.FakeHTable;
 
@@ -37,7 +37,7 @@ public class TestHBaseSystemTable {
   public void testSetDataVersion() throws IOException {
     final Configuration conf = HBaseConfiguration.create();
     final HTableDescriptor desc = new HTableDescriptor();
-    final FakeHTable table = new FakeHTable("system", desc, conf, false, 0, true, true);
+    final FakeHTable table = new FakeHTable("system", desc, conf, false, 0, true, true, null);
 
     final KijiURI uri = KijiURI.newBuilder("kiji://test/instance").build();
     final HBaseSystemTable systemTable = new HBaseSystemTable(uri, table);

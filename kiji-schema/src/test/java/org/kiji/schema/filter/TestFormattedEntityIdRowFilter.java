@@ -25,10 +25,6 @@ import static org.kiji.schema.avro.ComponentType.INTEGER;
 import static org.kiji.schema.avro.ComponentType.LONG;
 import static org.kiji.schema.avro.ComponentType.STRING;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Random;
@@ -38,8 +34,6 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
-import org.apache.hadoop.hbase.filter.RowFilter;
-import org.apache.hadoop.hbase.filter.WritableByteArrayComparable;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Test;
 
@@ -345,19 +339,14 @@ public class TestFormattedEntityIdRowFilter {
     RowKeyFormat2 rowKeyFormat = createRowKeyFormat(1, INTEGER, LONG);
     EntityIdFactory factory = EntityIdFactory.getFactory(rowKeyFormat);
 
-    // Create and serialize a filter
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
+    // Create and serialize a filter.
     FormattedEntityIdRowFilter filter = createFilter(rowKeyFormat, 10);
-    filter.toHBaseFilter(null).write(dos);
+    byte[] serializedFilter = filter.toHBaseFilter(null).toByteArray();
 
-    // Deserialize the filter
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    DataInputStream dis = new DataInputStream(bais);
-    Filter deserializedFilter = new FilterList();
-    deserializedFilter.readFields(dis);
+    // Deserialize the filter.
+    Filter deserializedFilter = FilterList.parseFrom(serializedFilter);
 
-    // Filter an entity with the deserialized filter
+    // Filter an entity with the deserialized filter.
     EntityId entityId = factory.getEntityId(10, 10L);
     byte[] hbaseKey = entityId.getHBaseRowKey();
     boolean filtered = deserializedFilter.filterRowKey(hbaseKey, 0, hbaseKey.length);
@@ -476,20 +465,13 @@ public class TestFormattedEntityIdRowFilter {
       List<Filter> filters = ((FilterList) filter).getFilters();
       return String.format("[%s] AND [%s]",
           prefixFilterToString((PrefixFilter) filters.get(0)),
-          rowFilterToString((RowFilter) filters.get(1)));
+          filter.toString());
     } else {
-      return rowFilterToString((RowFilter) filter);
+      return filter.toString();
     }
   }
 
   private String prefixFilterToString(PrefixFilter prefixFilter) throws Exception {
     return toBinaryString(prefixFilter.getPrefix());
-  }
-
-  private String rowFilterToString(RowFilter rowFilter) throws Exception {
-    WritableByteArrayComparable comparator = rowFilter.getComparator();
-    Field patternField = comparator.getClass().getDeclaredField("pattern");
-    patternField.setAccessible(true);
-    return String.format("Regex: %s", patternField.get(comparator));
   }
 }

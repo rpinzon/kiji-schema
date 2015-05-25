@@ -35,12 +35,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.KeyValue.KVComparator;
 import org.apache.hadoop.hbase.client.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.kiji.annotations.ApiAudience;
 import org.kiji.annotations.ApiStability;
 import org.kiji.schema.DecodedCell;
@@ -66,7 +67,7 @@ import org.kiji.schema.layout.impl.CellDecoderProvider;
 @ApiStability.Experimental
 public final class HBaseKijiResult implements KijiResult {
   private static final Logger LOG = LoggerFactory.getLogger(HBaseKijiResult.class);
-  private static final Comparator<KeyValue> KV_COMPARATOR = new KVComparator();
+  private static final Comparator<Cell> KV_COMPARATOR = new KVComparator();
   private static final Comparator<IndexRange> INDEX_RANGE_COMPARATOR = new IndexStartComparator();
 
   /**
