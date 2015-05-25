@@ -36,7 +36,7 @@
   <inceptionYear>2012</inceptionYear>
 
   <properties>
-    <kiji-checkin.version>1.1.0-SNAPSHOT</kiji-checkin.version>
+    <kiji-checkin.version>1.0.6</kiji-checkin.version>
     <kiji-platforms.version>1.4.0-NG</kiji-platforms.version>
     <fake-hbase.version>0.3.0-SNAPSHOT</fake-hbase.version>
     <kiji-annotations.version>1.1.2-SNAPSHOT</kiji-annotations.version>
