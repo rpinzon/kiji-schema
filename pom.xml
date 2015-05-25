@@ -38,11 +38,11 @@
   <properties>
     <kiji-checkin.version>1.0.6</kiji-checkin.version>
     <kiji-platforms.version>1.4.0-NG</kiji-platforms.version>
-    <fake-hbase.version>0.3.0-SNAPSHOT</fake-hbase.version>
-    <kiji-annotations.version>1.1.2-SNAPSHOT</kiji-annotations.version>
-    <kiji-delegation.version>1.1.2-SNAPSHOT</kiji-delegation.version>
-    <kiji-common-flags.version>1.1.1-SNAPSHOT</kiji-common-flags.version>
-    <kiji-commons.version>0.1.0-SNAPSHOT</kiji-commons.version>
+    <fake-hbase.version>0.3.0-NG</fake-hbase.version>
+    <kiji-annotations.version>1.1.1</kiji-annotations.version>
+    <kiji-delegation.version>1.1.1</kiji-delegation.version>
+    <kiji-common-flags.version>1.1.0</kiji-common-flags.version>
+    <kiji-commons.version>0.1.0-NG</kiji-commons.version>
 
     <bento-maven-plugin.version>0.1.0-SNAPSHOT</bento-maven-plugin.version>
   </properties>
