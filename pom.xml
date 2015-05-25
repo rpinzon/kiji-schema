@@ -28,7 +28,7 @@
   <parent>
     <groupId>org.kiji.pom</groupId>
     <artifactId>root-pom</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.3.0-NG</version>
   </parent>
 
   <name>KijiSchema top-level project</name>
