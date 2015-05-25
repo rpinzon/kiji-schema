@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.kiji.schema</groupId>
     <artifactId>kiji-schema-root</artifactId>
-    <version>1.5.0-SNAPSHOT</version>
+    <version>1.5.0-NG</version>
     <relativePath>..</relativePath>
   </parent>
 
@@ -66,6 +66,10 @@
 
           <!-- Record fields are now private : use accessors always. -->
           <fieldVisibility>private</fieldVisibility>
+          <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
+          <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+          <!--sourceDirectory>${project.basedir}/src/test/avro/</sourceDirectory-->
+          <!--outputDirectory>${project.basedir}/src/test/java/</outputDirectory-->
         </configuration>
       </plugin>
 
@@ -96,18 +100,19 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <links>
-            <link>http://archive.cloudera.com/cdh4/cdh/4/hadoop/api</link>
-            <link>http://archive.cloudera.com/cdh4/cdh/4/hbase/apidocs</link>
-          </links>
-        </configuration>
+        <artifactId>maven-jar-plugin</artifactId>
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -180,6 +185,20 @@
       <artifactId>kiji-checkin</artifactId>
       <version>${kiji-checkin.version}</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.kiji.platforms</groupId>
+      <artifactId>kiji-compile-platform</artifactId>
+      <type>pom</type>
+      <version>${kiji-platforms.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.kiji.platforms</groupId>
+      <artifactId>kiji-test-platform</artifactId>
+      <type>pom</type>
+      <version>${kiji-platforms.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
