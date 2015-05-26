@@ -38,7 +38,7 @@
   <properties>
     <kiji-checkin.version>1.0.6</kiji-checkin.version>
     <kiji-platforms.version>1.4.0-NG</kiji-platforms.version>
-    <fake-hbase.version>0.3.0-NG</fake-hbase.version>
+    <fake-hbase.version>0.1.5</fake-hbase.version>
     <kiji-annotations.version>1.1.1</kiji-annotations.version>
     <kiji-delegation.version>1.1.1</kiji-delegation.version>
     <kiji-common-flags.version>1.1.0</kiji-common-flags.version>
