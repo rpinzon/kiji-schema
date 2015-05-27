@@ -25,12 +25,20 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.FamilyFilter;
 import org.apache.hadoop.hbase.filter.QualifierFilter;
+import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.io.hfile.HFile;
+import org.apache.hadoop.hbase.security.access.Permission.Action;
+import org.apache.hadoop.hbase.security.access.UserPermission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.kiji.annotations.ApiAudience;
 import org.kiji.delegation.Lookups;
@@ -42,6 +50,8 @@ import org.kiji.delegation.Lookups;
  */
 @ApiAudience.Framework
 public abstract class SchemaPlatformBridge {
+  private static final Logger LOG = LoggerFactory.getLogger(SchemaPlatformBridge.class);
+
   /**
    * This API should only be implemented by other modules within KijiSchema;
    * to discourage external users from extending this class, keep the c'tor
@@ -76,6 +86,17 @@ public abstract class SchemaPlatformBridge {
    */
   public abstract void setWriteBufferSize(HTableInterface hTable, long bufSize)
       throws IOException;
+
+
+  /**
+   * Adds an hbase KeyValue to a Put in a platform-safe way.
+   *
+   * @param put The Put object to receive the kv.
+   * @param kv A KeyValue to add.
+   * @throws IOException if there's an error while adding the keyvalue.
+   * @return The amended Put object.
+   */
+  public abstract Put addKVToPut(Put put, KeyValue kv) throws IOException;
 
   /**
    * Creates an HFile writer.
@@ -126,11 +147,46 @@ public abstract class SchemaPlatformBridge {
    *
    * @param op The comparator operator to use.
    * @param qualifier The HBase qualifier as bytes.
-   * @return A qualifier filter
+   * @return A qualifier filter.
    */
   public abstract QualifierFilter createQualifierFilter(
       CompareFilter.CompareOp op,
       byte[] qualifier);
+
+  /**
+   * Gets a regex-based QualifierFilter for this version of HBase. Exists in the bridge
+   * because of incompatible changes to RegexComparator.
+   *
+   * @param op The comparator operator to use.
+   * @param regexString The regex to use for comparison, in string format.
+   * @return A qualifier filter.
+   */
+  public abstract QualifierFilter createQualifierFilterFromRegex(
+      CompareFilter.CompareOp op,
+      String regexString);
+
+  /**
+   * Gets a regex-based RowFilter for this version of HBase. Exists in the bridge because of
+   * incompatible changes to RegexComparator.
+   *
+   * @param op The comparator operator to use.
+   * @param regexString The regex to use for comparison, in string format.
+   * @return A row filter.
+   */
+  public abstract RowFilter createRowFilterFromRegex(
+      CompareFilter.CompareOp op,
+      String regexString);
+
+  /**
+   * Generates informative debug strings for a compare filter. Exists in the bridge because of
+   * incompatible changes to WritableBytesComparable.
+   *
+   * @param cfilter A compare filter.
+   * @return A two element array. The first element will be a String representation
+   *     of the compare operator. The second element will be a String representation
+   *     of the value compared against.
+   */
+  public abstract String[] debugStringsForCompareFilter(CompareFilter cfilter);
 
   /**
    * Creates a Delete operation for an entire row up to a particular timestamp. Necessary due to
@@ -161,6 +217,36 @@ public abstract class SchemaPlatformBridge {
    * @return 0 if the compression settings are the same. Non-zero otherwise.
    */
   public abstract int compareCompression(HColumnDescriptor col1, HColumnDescriptor col2);
+
+  /**
+   * Creates a UserPermission. This is necessary because due to changes in the type
+   * of the hTableName parameter.
+   *
+   * @param user The user.
+   * @param tableName The table.
+   * @param family The family. May be null in which case the action is granted across the table.
+   * @param actions The actions to grant.
+   * @return A constructed UserPermission object.
+   */
+  public UserPermission createUserPermission(
+      byte[] user,
+      byte[] tableName,
+      byte[] family,
+      Action... actions
+  ) {
+    throw new UnsupportedOperationException(
+        "Active SchemaPlatformBridge implementation does not support security operations.");
+  }
+
+  /**
+   * Gets the KeyValues from an HBase Result.  Returns an empty array if the result has no Cells
+   * in it.  This method may be slow for implementations for HBase 0.96+,
+   * because it has to do an array copy.
+   *
+   * @param result The Result to get KeyValues from.
+   * @return The KeyValues in result.
+   */
+  public abstract KeyValue[] keyValuesFromResult(Result result);
 
   /**
    * An interface for HColumnDescriptors, implemented by the bridges.
@@ -237,10 +323,22 @@ public abstract class SchemaPlatformBridge {
     }
     synchronized (SchemaPlatformBridge.class) {
       if (null == mBridge) {
-        mBridge = Lookups.getPriority(SchemaPlatformBridgeFactory.class).lookup().getBridge();
+        String hadoopVer = org.apache.hadoop.util.VersionInfo.getVersion();
+        String hbaseVer = org.apache.hadoop.hbase.util.VersionInfo.getVersion();
+
+        LOG.info("Loading bridge for Hadoop version {} and HBase version {}", hadoopVer, hbaseVer);
+        final SchemaPlatformBridgeFactory factory =
+            Lookups.getPriority(SchemaPlatformBridgeFactory.class).lookup();
+        if (null == factory) {
+          throw new RuntimeException(
+              "Could not find suitable SchemaPlatformBridgeFactory. This may be an issue with"
+              + " bridge providers on your classpath.");
+        } else {
+          LOG.info("Selected bridge: {}", factory.getClass().getName());
+        }
+        mBridge = factory.getBridge();
       }
       return mBridge;
     }
   }
 }
-

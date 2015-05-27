@@ -21,6 +21,7 @@ package org.kiji.schema.platform;
 
 import java.io.IOException;
 
+import com.google.common.base.Charsets;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,14 +29,21 @@ import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.filter.BinaryComparator;
 import org.apache.hadoop.hbase.filter.CompareFilter;
 import org.apache.hadoop.hbase.filter.FamilyFilter;
 import org.apache.hadoop.hbase.filter.QualifierFilter;
+import org.apache.hadoop.hbase.filter.RegexStringComparator;
+import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.io.hfile.CacheConfig;
 import org.apache.hadoop.hbase.io.hfile.Compression;
 import org.apache.hadoop.hbase.io.hfile.HFile;
 import org.apache.hadoop.hbase.regionserver.StoreFile;
+import org.apache.hadoop.hbase.security.access.Permission.Action;
+import org.apache.hadoop.hbase.security.access.UserPermission;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -82,6 +90,12 @@ public final class CDH41MR1SchemaBridge extends SchemaPlatformBridge {
 
   /** {@inheritDoc} */
   @Override
+  public Put addKVToPut(Put put, KeyValue kv) throws IOException {
+    return put.add(kv);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public HFile.Writer createHFileWriter(Configuration conf,
       FileSystem fs, Path path, int blockSizeBytes, String compressionType)
       throws IOException {
@@ -118,6 +132,32 @@ public final class CDH41MR1SchemaBridge extends SchemaPlatformBridge {
 
   /** {@inheritDoc} */
   @Override
+  public QualifierFilter createQualifierFilterFromRegex(
+      CompareFilter.CompareOp op,
+      String regexString
+  ) {
+    return new QualifierFilter(op, new RegexStringComparator(regexString));
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public RowFilter createRowFilterFromRegex(CompareFilter.CompareOp op, String regexString) {
+    final RegexStringComparator comparator = new RegexStringComparator(regexString);
+    comparator.setCharset(Charsets.ISO_8859_1);
+    return new RowFilter(op, comparator);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public String[] debugStringsForCompareFilter(CompareFilter cfilter) {
+    return new String[] {
+        cfilter.getOperator().toString(),
+        Bytes.toStringBinary(cfilter.getComparator().getValue()),
+    };
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public Delete createDelete(byte[] rowKey, long timestamp) {
     return new Delete(rowKey, timestamp, null);
   }
@@ -132,6 +172,23 @@ public final class CDH41MR1SchemaBridge extends SchemaPlatformBridge {
   @Override
   public int compareCompression(HColumnDescriptor col1, HColumnDescriptor col2) {
     return col1.getCompressionType().toString().compareTo(col2.getCompressionType().toString());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public UserPermission createUserPermission(
+      byte[] user,
+      byte[] tableName,
+      byte[] family,
+      Action... actions
+  ) {
+    return new UserPermission(user, tableName, family, actions);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public KeyValue[] keyValuesFromResult(Result result) {
+    return result.raw();
   }
 
   /**
@@ -208,4 +265,3 @@ public final class CDH41MR1SchemaBridge extends SchemaPlatformBridge {
     }
   }
 }
-
