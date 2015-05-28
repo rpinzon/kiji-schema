@@ -343,7 +343,7 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
    * @return the ZooKeeper session client.
    */
   public ZooKeeper getZKClient() {
-    return getZKClient(0.0);
+    return getZKClient(5.0);
   }
 
   /** {@inheritDoc} */
