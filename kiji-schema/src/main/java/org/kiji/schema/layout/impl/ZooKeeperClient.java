@@ -20,13 +20,16 @@
 package org.kiji.schema.layout.impl;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.neogrid.ZkFile;
+
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -42,7 +45,6 @@ import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.kiji.annotations.ApiAudience;
 import org.kiji.schema.KijiIOException;
 import org.kiji.schema.RuntimeInterruptedException;
@@ -102,6 +104,22 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
       } else {
         return existingClient.retain();
       }
+    }
+  }
+
+  /**
+   * Drop remaining instances from ZOOKEEPER_CACHE.
+   */
+  public static void cleanCache() {
+    final Set<ZooKeeperClient> cachedClients;
+    synchronized (CACHE_MONITOR) {
+      cachedClients = new HashSet<ZooKeeperClient>(ZOOKEEPER_CACHE.values());
+    }
+    for (ZooKeeperClient aClient : cachedClients) {
+      aClient.close();
+    }
+    synchronized (CACHE_MONITOR) {
+      ZOOKEEPER_CACHE.clear();
     }
   }
 
