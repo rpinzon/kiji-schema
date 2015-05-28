@@ -26,13 +26,16 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.neogrid.ZkFile;
+
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -42,7 +45,6 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.kiji.annotations.ApiAudience;
 import org.kiji.annotations.ApiStability;
 import org.kiji.annotations.Inheritance;
@@ -142,6 +144,11 @@ public final class ZooKeeperMonitor implements Closeable {
     OPEN,
     CLOSED
   }
+
+  /** Factory used to see the creation of monitoring thread */
+  private static final ThreadFactory MONITORING_THREADS = new ThreadFactoryBuilder().setNameFormat("kiji-zkmonitor-%d").build();
+
+  private static final ThreadFactory WATCHER_THREADS = new ThreadFactoryBuilder().setNameFormat("kiji-zkwatcher-%d").build();
 
   // -----------------------------------------------------------------------------------------------
 
@@ -433,13 +440,14 @@ public final class ZooKeeperMonitor implements Closeable {
           "Cannot start LayoutTracker instance in state %s.", oldState);
 
       // Always runs registerWatcher() in a separate thread:
-      final Thread thread = new Thread() {
+      final Thread thread = WATCHER_THREADS.newThread(new Runnable() {
         /** {@inheritDoc} */
         @Override
         public void run() {
           registerWatcher();
         }
-      };
+      });
+
       thread.start();
     }
 
@@ -568,7 +576,7 @@ public final class ZooKeeperMonitor implements Closeable {
       final State oldState = mState.getAndSet(State.OPEN);
       Preconditions.checkState(oldState == State.INITIALIZED,
           "Cannot open UsersTracker instance in state %s.", oldState);
-      final Thread thread = new Thread() {
+      final Thread thread = MONITORING_THREADS.newThread(new Runnable() {
         /** {@inheritDoc} */
         @Override
         public void run() {
@@ -580,7 +588,8 @@ public final class ZooKeeperMonitor implements Closeable {
           }
           registerWatcher();
         }
-      };
+      });
+
       thread.start();
     }
 

@@ -134,14 +134,16 @@ public final class DebugResourceTracker {
         mReferenceTracker = null;
         mCounter = new AtomicInteger(0);
         LOG.debug("Registering hook to log number of unclosed resources at shutdown.");
-        Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+        Thread hook = new Thread(new ShutdownHook(), "kiji-shutdownhook-counter");
+        Runtime.getRuntime().addShutdownHook(hook);
         break;
       }
       case REFERENCES: {
         mReferenceTracker = new ReferenceTracker();
         mCounter = new AtomicInteger(0);
         LOG.debug("Registering hook to log details of unclosed resources at shutdown.");
-        Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+        Thread hook = new Thread(new ShutdownHook(), "kiji-shutdownhook-references");
+        Runtime.getRuntime().addShutdownHook(hook);
         break;
       }
       default: throw new InternalKijiError(String.format(
@@ -150,7 +152,7 @@ public final class DebugResourceTracker {
   }
 
   /** Runs at JVM shutdown and logs warnings for open resources. */
-  private final class ShutdownHook extends Thread {
+  private final class ShutdownHook implements Runnable {
     /** {@inheritDoc} */
     @Override
     public void run() {
