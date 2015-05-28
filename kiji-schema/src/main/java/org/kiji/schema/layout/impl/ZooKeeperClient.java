@@ -173,6 +173,11 @@ public final class ZooKeeperClient implements ReferenceCountable<ZooKeeperClient
         synchronized (mMonitor) {
           LOG.warn("ZooKeeper client session {} expired.", mZKClient.getSessionId());
           if (mState == State.OPEN) {
+        	try {
+              mZKClient.close();
+        	} catch (InterruptedException e) {
+              LOG.warn("Interrupted exception while closing expired session.", e);
+            }
             createZKClient();
           } else {
             LOG.debug("ZooKeeperClient in state {}; not reopening ZooKeeper session.", mState);
