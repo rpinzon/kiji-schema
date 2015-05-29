@@ -1,6 +1,5 @@
 package com.neogrid;
 
-import java.io.File;
 import java.io.Serializable;
 
 import org.apache.commons.io.FilenameUtils;
