@@ -45,6 +45,8 @@
     <avro-mapred.version>1.7.5</avro-mapred.version>
     <fake-hbase.version>0.3.0-SNAPSHOT</fake-hbase.version>
 
+    <findbugs.onlyAnalyze>true</findbugs.onlyAnalyze>
+
     <!--
        The Hadoop and HBase versions to use in the default "cdh4" profile
        of the kiji-schema/ submodule. Can be set independently of the root
