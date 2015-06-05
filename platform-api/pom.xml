@@ -63,6 +63,7 @@
       <artifactId>kiji-cdh5-3-platform</artifactId>
       <version>${kiji-platforms.version}</version>
       <scope>provided</scope>
+      <type>pom</type>
       <exclusions>
         <!-- When running in Eclipse, the Jackson in this project was superceding the
         version used by schema core which was throwing a weird NoSuchMethodException -->
